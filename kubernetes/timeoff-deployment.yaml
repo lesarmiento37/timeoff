@@ -14,6 +14,6 @@ spec:
     spec:
       containers:
       - name: timeoff
-        image: leonardos37/timeoff:v1.3
+        image: leonardos37/timeoff:v1.4
         ports:
         - containerPort: 3000
