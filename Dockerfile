@@ -22,7 +22,7 @@ RUN apk add --no-cache \
 RUN uname -a
 
 COPY package.json  .
-#RUN nvm install 18.14.2
+
 RUN npm cache clean --force
 
 RUN npm install -g node-pre-gyp
@@ -32,8 +32,7 @@ RUN apk add --no-cache sqlite
 RUN npm uninstall node-sass
 RUN npm install node-sass
 RUN npm install chromedriver
-#RUN npm install grpc
-#RUN npm install sqlite3
+
 RUN npm install
 
 FROM alpine:latest
