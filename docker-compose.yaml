@@ -1,0 +1,19 @@
+version: '3.8'
+services:
+  cache:
+    container_name: redis_timeoff
+    image: redis:latest
+    restart: always
+    ports:
+      - '6379:6379'
+    command: redis-server --save 20 1 --loglevel warning 
+    volumes: 
+      - cache:/data
+  timeoff:
+    image: leonardos37/timeoff:v1.0
+    ports:
+      - '3000:3000'
+    container_name: alpine_timeoff
+volumes:
+  cache:
+    driver: local
