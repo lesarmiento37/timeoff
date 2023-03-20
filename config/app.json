@@ -13,8 +13,8 @@
   "sessionStore": {
     "useRedis": true,
     "redisConnectionConfiguration": {
-      "host": "redis_timeoff",
-      "port": 6379
+      "host": "192.168.49.2",
+      "port": 30009
     }
   },
   "ga_analytics_on" : false,

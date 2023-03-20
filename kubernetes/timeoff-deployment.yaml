@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: timeoff
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: timeoff
+  template:
+    metadata:
+      labels:
+        app: timeoff
+    spec:
+      containers:
+      - name: timeoff
+        image: leonardos37/timeoff:v1.3
+        ports:
+        - containerPort: 3000
