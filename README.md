@@ -202,8 +202,3 @@ When the pipeline is executed through the deployment.sh file, a new image is bui
 ![image](https://user-images.githubusercontent.com/17441125/226502442-64d5ec52-2418-48e4-9323-f2914f37b879.png)
 
 
-
-## Feedback
-
-Please report any issues or feedback to <a href="https://twitter.com/FreeTimeOffApp">twitter</a> or Email: pavlo at timeoff.management
-
