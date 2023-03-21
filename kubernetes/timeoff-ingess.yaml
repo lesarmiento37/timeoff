@@ -1,0 +1,28 @@
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: timeoff-ingress
+  annotations:
+    nginx.ingress.kubernetes.io/rewrite-target: /
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/security-groups: sg-123456789101112
+    alb.ingress.kubernetes.io/subnets: subnet-123456789101112, subnet-123456789101112
+    alb.ingress.kubernetes.io/success-codes: 200,401
+    alb.ingress.kubernetes.io/load-balancer-attributes: idle_timeout.timeout_seconds=600
+    alb.ingress.kubernetes.io/backend-protocol: HTTP
+    alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:123456789101112:certificate/123456789101112
+    alb.ingress.kubernetes.io/wafv2-acl-arn: arn:aws:wafv2:us-east-1:123456789101112:regional/webacl/AWSWAFSecurityAutomationsv2/123456789101112
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP": 80}, {"HTTPS":443}]'
+    alb.ingress.kubernetes.io/actions.ssl-redirect: '{"Type": "redirect", "RedirectConfig": { "Protocol": "HTTPS", "Port": "443", "StatusCode": "HTTP_301"}}'
+
+
+spec:
+  rules:
+    - host: timeoff.leonardo.com
+      http:
+        paths:
+          - backend:
+              serviceName: timeoff
+              servicePort: 3000
+    

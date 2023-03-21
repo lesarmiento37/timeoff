@@ -32,6 +32,7 @@ RUN apk add --no-cache sqlite
 RUN npm uninstall node-sass
 RUN npm install node-sass
 RUN npm install chromedriver
+RUN npm run compile-sass
 
 RUN npm install
 
