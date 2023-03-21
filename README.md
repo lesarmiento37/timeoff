@@ -66,61 +66,43 @@ Email notification to all involved parties.
 
 Optionally allow employees to see the time off information of entire company regardless of department structure.
 
+## Architecture
+
+The proposed architecture is based in a kubernetes cluster, in this case a minikube cluster, however, this infrastructure can be deployed in kubernetes cluster in cloud.
+
+The diagram of this infrastructure is shown in the following image:
+
+![image](https://user-images.githubusercontent.com/17441125/226503549-80bb0e73-7f19-4f24-bf32-3fbe20418136.png)
+
+
 ## Screenshots
 
-![TimeOff.Management Screenshot](https://raw.githubusercontent.com/timeoff-management/application/master/public/img/readme_screenshot.png)
+This is the deployed application 
+
+![image](https://user-images.githubusercontent.com/17441125/226500543-405f3720-1b0d-4179-a30f-4edccef9ec02.png)
+
+This is the terminal of minikube 
+
+![image](https://user-images.githubusercontent.com/17441125/226500683-362e3faf-c15f-45e4-bf0f-52d2024689f8.png)
 
 ## Installation
 
-### Cloud hosting
-
-Visit http://timeoff.management/
-
-Create company account and use cloud based version.
+For Installation purpose it was required to modify the dependencies versions in package.json provided in the project. For infrastructure security purposes it is required to add an ingress to create a balancer with the related annotations.
 
 ### Self hosting
 
 Install TimeOff.Management application within your infrastructure:
 
-(make sure you have Node.js (>=4.0.0) and SQLite installed)
+(make sure you have Node.js (>=4.0.0), SQLite installed, dockerhub login and minikube installed locally)
 
 ```bash
-git clone https://github.com/timeoff-management/application.git timeoff-management
-cd timeoff-management
-npm install
-npm start
+sudo /etc/init.d/docker start
+minikube start
+kubectl apply -f kubernetes/
+bash deployment.sh
+minikube ip
 ```
-Open http://localhost:3000/ in your browser.
-
-## Run tests
-
-We have quite a wide test coverage, to make sure that the main user paths work as expected.
-
-Please run them frequently while developing the project.
-
-Make sure you have Chrome driver installed in your path and Chrome browser for your platform.
-
-If you want to see the browser execute the interactions prefix with `SHOW_CHROME=1`
-
-```bash
-USE_CHROME=1 npm test
-```
-
-(make sure that application with default settings is up and running)
-
-Any bug fixes or enhancements should have good test coverage to get them into "master" branch.
-
-## Updating existing instance with new code
-
-In case one needs to patch existing instance of TimeOff.Managenent application with new version:
-
-```bash
-git fetch
-git pull origin master
-npm install
-npm run-script db-update
-npm start
-```
+Open http://${MINIKUBE_IP}:$(MINIKUBE_PORT)/ in your browser.
 
 ## How to?
 
@@ -133,25 +115,93 @@ Follow instructions on [this page](docs/extend_colors_for_leave_type.md).
 
 There are few options to configure an installation.
 
-### Make sorting sensitive to particular locale
+### Make sorting sensitive to particular locale and Force employees to pick type each time new leave is booked
 
-Given the software could be installed for company with employees with non-English names there might be a need to
-respect the alphabet while sorting customer entered content.
+The config file is modified as follows:
 
-For that purpose the application config file has `locale_code_for_sorting` entry.
-By default the value is `en` (English). One can override it with other locales such as `cs`, `fr`, `de` etc.
-
-### Force employees to pick type each time new leave is booked
-
-Some organizations require employees to explicitly pick the type of leave when booking time off. So employee makes a choice rather than relying on default settings.
-That reduce number of "mistaken" leaves, which are cancelled after.
-
-In order to force employee to explicitly pick the leave type of the booked time off, change `is_force_to_explicitly_select_type_when_requesting_new_leave`
-flag to be `true` in the `config/app.json` file.
+![image](https://user-images.githubusercontent.com/17441125/226501670-3619d3fc-02c0-4eb6-82c0-6729fff5853c.png)
 
 ## Use Redis as a sessions storage
 
-Follow instructions on [this page](docs/SessionStoreInRedis.md).
+To use the redis server the file app.json is configured like this
+```json
+"sessionStore": {
+    "useRedis": true,
+    "redisConnectionConfiguration": {
+      "host": "192.168.49.2",
+      "port": 30009
+    }
+  },
+```
+A deployment and a service are deployed to get a standalone redis like this:
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis
+spec:
+  type: NodePort
+  selector:
+    app: redis
+  ports:
+  - port: 6379
+    targetPort: 6379
+    nodePort: 30009
+    protocol: TCP
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: redis
+spec:
+  selector:
+    matchLabels:
+      app: redis
+  template:
+    metadata:
+      labels:
+        app: redis
+    spec:
+      containers:
+      - name: redis-container
+        image: redis:latest
+        resources:
+          limits:
+            memory: "512Mi"
+            cpu: "500m"
+        ports:
+        - containerPort: 6379
+```
+
+The timeoff deployment is configured to allow a load balancing traffic with a exposed service, and configurable number of replicas.
+```yaml
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: timeoff
+spec:
+  replicas: 2
+  selector:
+    matchLabels:
+      app: timeoff
+  template:
+    metadata:
+      labels:
+        app: timeoff
+    spec:
+      containers:
+      - name: timeoff
+        image: leonardos37/timeoff:v1.4
+        ports:
+        - containerPort: 3000
+```
+
+When the pipeline is executed through the deployment.sh file, a new image is built in dockerhub which is then pulled by the deployment, based on the latest version.
+
+![image](https://user-images.githubusercontent.com/17441125/226502442-64d5ec52-2418-48e4-9323-f2914f37b879.png)
+
+
 
 ## Feedback
 
